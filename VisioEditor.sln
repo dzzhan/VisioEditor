@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisioEditor", "VisioEditor\VisioEditor.csproj", "{67E122F2-74EA-405B-8F97-28520BF5F4CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67E122F2-74EA-405B-8F97-28520BF5F4CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67E122F2-74EA-405B-8F97-28520BF5F4CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67E122F2-74EA-405B-8F97-28520BF5F4CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67E122F2-74EA-405B-8F97-28520BF5F4CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47D62038-B829-423D-880C-D740C223B70F}
+	EndGlobalSection
+EndGlobal
