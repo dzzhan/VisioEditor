@@ -345,5 +345,9 @@ namespace VisioEditor
             Shape conn = m_stCurrentPage.Drop(m_stAuditMaster.Masters["动态连接线"], 4.50, 4.50);
             ConnectShapes(sp1, sp2, conn);
         }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+        }
     }
 }
