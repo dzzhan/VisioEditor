@@ -216,8 +216,10 @@ namespace VisioEditor
             XmlNode root = xmlDoc.SelectSingleNode("task_graph");
             XmlNode taskList = xmlDoc.CreateElement("task_list");
             XmlNode connList = xmlDoc.CreateElement("connections");
+            XmlNode submitList = xmlDoc.CreateElement("submits");
             root.AppendChild(taskList);
             root.AppendChild(connList);
+            root.AppendChild(submitList);
 
             for (int i = 1; i <= m_stCurrentPage.Shapes.Count; i++)
             {
@@ -247,10 +249,20 @@ namespace VisioEditor
 
                     if (vShapes.Count == 2)
                     {
-                        XmlElement conn = xmlDoc.CreateElement("conn");
-                        conn.SetAttribute("from", vShapes[0]);
-                        conn.SetAttribute("to", vShapes[1]);
-                        connList.AppendChild(conn);
+                        if (sp.Text.ToLower() != "submit")
+                        {
+                            XmlElement conn = xmlDoc.CreateElement("conn");
+                            conn.SetAttribute("from", vShapes[0]);
+                            conn.SetAttribute("to", vShapes[1]);
+                            connList.AppendChild(conn);
+                        }
+                        else
+                        {
+                            XmlElement submit = xmlDoc.CreateElement("submit");
+                            submit.SetAttribute("source", vShapes[0]);
+                            submit.SetAttribute("target",vShapes[1]);
+                            submitList.AppendChild(submit);
+                        }
                     }
                 }
 
@@ -324,6 +336,20 @@ namespace VisioEditor
                     }
                 }
             }
+
+            XmlNode submitList = xmlRoot.SelectSingleNode("submits");
+            if (submitList != null)
+            {
+                foreach (XmlElement elem in submitList.ChildNodes)
+                {
+                    if (elem.Name.ToLower() == "submit")
+                    {
+                        string strSource = elem.Attributes["source"].Value;
+                        string strTarget = elem.Attributes["target"].Value;
+                        ConnectTask(vTaskShapes[strSource], vTaskShapes[strTarget], true);
+                    }
+                }
+            }
         }
 
         private Shape DrawTask(string strTaskName, int xPos, int yPos)
@@ -335,7 +361,7 @@ namespace VisioEditor
             return sp;
         }
 
-        private void ConnectTask(Shape sp1, Shape sp2)
+        private void ConnectTask(Shape sp1, Shape sp2, bool bIsSubmit = false)
         {
             if ((null == sp1) || (null == sp2))
             {
@@ -343,6 +369,10 @@ namespace VisioEditor
             }
 
             Shape conn = m_stCurrentPage.Drop(m_stAuditMaster.Masters["动态连接线"], 4.50, 4.50);
+            if (bIsSubmit)
+            {
+                conn.Text = "submit";
+            }
             ConnectShapes(sp1, sp2, conn);
         }
 
