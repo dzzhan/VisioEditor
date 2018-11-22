@@ -192,7 +192,7 @@ namespace VisioEditor
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            System.Environment.Exit(0);
         }
 
         private void ExportXML(string strXmlFileName)
@@ -256,6 +256,94 @@ namespace VisioEditor
 
             }
             xmlDoc.Save(strXmlFileName);
+        }
+
+        private void importToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.FileName = "";
+            dlg.Filter = "XML文件 (*.xml)|*.xml|所有文件(*.*)|*.*";
+            dlg.FilterIndex = 1;
+            dlg.RestoreDirectory = true;
+            dlg.CheckFileExists = true;
+            dlg.CheckPathExists = true;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                if (dlg.FileName.Trim() != string.Empty)
+                {
+                    m_stCurrentPage = axDrawingControl1.Document.Pages[1];
+                    ImportXML(dlg.FileName);
+                }
+            }
+        }
+
+        private void ImportXML(string strXmlFile)
+        {
+            XmlDocument xmldoc = new XmlDocument();
+            xmldoc.Load(strXmlFile);
+
+            XmlNode xmlRoot = xmldoc.SelectSingleNode("task_graph");
+            if (null == xmlRoot)
+            {
+                return;
+            }
+
+            Dictionary<string, Shape> vTaskShapes = new Dictionary<string, Shape>();
+            int xPos = 1;
+            int yPos = 11;
+            XmlNode taskList = xmlRoot.SelectSingleNode("task_list");
+            if (taskList != null)
+            {
+                foreach (XmlElement elem in taskList.ChildNodes)
+                {
+                    if (elem.Name.ToLower() == "task")
+                    {
+                        string strTaskName = elem.Attributes["name"].Value;
+                        Shape sp = DrawTask(strTaskName, xPos, yPos);
+                        xPos += 2;
+                        if (xPos >= 20)
+                        {
+                            xPos = 1;
+                            yPos -= 2;
+                        }
+                        vTaskShapes.Add(strTaskName, sp);
+                    }
+                }
+            }
+
+            XmlNode connList = xmlRoot.SelectSingleNode("connections");
+            if (connList != null)
+            {
+                foreach (XmlElement elem in connList.ChildNodes)
+                {
+                    if (elem.Name.ToLower() == "conn")
+                    {
+                        string strSource = elem.Attributes["from"].Value;
+                        string strTarget = elem.Attributes["to"].Value;
+                        ConnectTask(vTaskShapes[strSource], vTaskShapes[strTarget]);
+                    }
+                }
+            }
+        }
+
+        private Shape DrawTask(string strTaskName, int xPos, int yPos)
+        {
+            Shape sp = m_stCurrentPage.Drop(m_stBasicMaster.Masters["矩形"], xPos, yPos);
+            sp.Text = strTaskName;
+            sp.get_CellsU("LineColor").ResultIU = (double)VisDefaultColors.visDarkGreen;
+            sp.Cells["FillForegnd"].Formula = "RGB(192,255,206)";
+            return sp;
+        }
+
+        private void ConnectTask(Shape sp1, Shape sp2)
+        {
+            if ((null == sp1) || (null == sp2))
+            {
+                return;
+            }
+
+            Shape conn = m_stCurrentPage.Drop(m_stAuditMaster.Masters["动态连接线"], 4.50, 4.50);
+            ConnectShapes(sp1, sp2, conn);
         }
     }
 }
