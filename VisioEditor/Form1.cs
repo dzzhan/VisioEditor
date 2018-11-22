@@ -58,26 +58,6 @@ namespace VisioEditor
             m_stAuditMaster = axDrawingControl1.Document.Application.Documents.OpenEx("AUDIT_M.VSSX",
                                                                          (short)VisOpenSaveArgs.visOpenDocked);
             m_stCurrentPage = axDrawingControl1.Document.Pages[1];
-            /*
-            Page currentPage = axDrawingControl1.Document.Pages[1];
-            Shape shape1 = currentPage.Drop(currentStencil.Masters["矩形"], 1, 11);
-            Shape shape2 = currentPage.Drop(currentStencil.Masters["矩形"], 3, 11);
-            Shape connector = currentPage.Drop(auditStencil.Masters["动态连接线"], 4.50, 4.50);
-            shape1.Text = "DSP\n191";
-            shape2.Text = "HAC\n20";
-            shape1.get_CellsU("LineColor").ResultIU = (double)VisDefaultColors.visDarkGreen;//有电（绿色）
-            shape1.get_CellsSRC((short)VisSectionIndices.visSectionObject, 
-                                (short)VisRowIndices.visRowFill,
-                                (short)VisCellIndices.visFillForegnd).Formula = "RGB(192,255,206)";
-            shape2.get_CellsSRC((short)VisSectionIndices.visSectionObject, 
-                                (short)VisRowIndices.visRowLine, 
-                                (short)VisCellIndices.visLineColor).ResultIU = 4;
-            ConnectShapes(shape1, shape2, connector);
-            Cell arrowCell = connector.get_CellsSRC((short)VisSectionIndices.visSectionObject, 
-                                                    (short)VisRowIndices.visRowLine, 
-                                                    (short)VisCellIndices.visLineEndArrow);
-            arrowCell.FormulaU = "5";
-            connector.get_Cells("EndArrow").Formula = "=5";*/
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -127,9 +107,6 @@ namespace VisioEditor
             shape1.Text = "DSP\n191";
             shape1.get_CellsU("LineColor").ResultIU = (double)VisDefaultColors.visDarkGreen;//有电（绿色）
             shape1.Cells["FillForegnd"].Formula = "RGB(192,255,206)";
-            //shape1.get_CellsSRC((short)VisSectionIndices.visSectionObject,
-            //                    (short)VisRowIndices.visRowFill,
-            //                    (short)VisCellIndices.visFillForegnd).Formula = "RGB(192,255,206)";
         }
 
         private void CheckShapes()
@@ -158,11 +135,11 @@ namespace VisioEditor
             {
                 Cell fromCell = conn.FromCell;
                 Cell toCell = conn.ToCell;
-                if (fromCell.Shape.Master.Name == "矩形")
+                if (fromCell.Shape.Master.Name != "动态连接线")
                 {
                     vShapes.Add(fromCell.Shape.Text);
                 }
-                else if (toCell.Shape.Master.Name == "矩形")
+                else if (toCell.Shape.Master.Name == "动态连接线")
                 {
                     vShapes.Add(toCell.Shape.Text);
                 }
@@ -228,6 +205,8 @@ namespace VisioEditor
                 {
                     XmlElement task = xmlDoc.CreateElement("task");
                     task.SetAttribute("name", sp.Text);
+                    task.SetAttribute("shape", sp.Master.Name);
+                    task.SetAttribute("fill_color", sp.Cells["FillForegnd"].Formula);
                     taskList.AppendChild(task);
                 }
                 else
@@ -237,11 +216,11 @@ namespace VisioEditor
                     {
                         Cell fromCell = cn.FromCell;
                         Cell toCell = cn.ToCell;
-                        if (fromCell.Shape.Master.Name == "矩形")
+                        if (fromCell.Shape.Master.Name != "动态连接线")
                         {
                             vShapes.Add(fromCell.Shape.Text);
                         }
-                        else if (toCell.Shape.Master.Name == "矩形")
+                        else if (toCell.Shape.Master.Name != "动态连接线")
                         {
                             vShapes.Add(toCell.Shape.Text);
                         }
@@ -311,7 +290,18 @@ namespace VisioEditor
                     if (elem.Name.ToLower() == "task")
                     {
                         string strTaskName = elem.Attributes["name"].Value;
-                        Shape sp = DrawTask(strTaskName, xPos, yPos);
+                        string strShapeName = "矩形";
+                        if (elem.HasAttribute("shape"))
+                        {
+                            strShapeName = elem.Attributes["shape"].Value;
+                        }
+                        string strColor = "RGB(192,255,206)";
+                        if (elem.HasAttribute("fill_color"))
+                        {
+                            strColor = elem.Attributes["fill_color"].Value;
+                        }
+
+                        Shape sp = DrawTask(strTaskName, xPos, yPos, strShapeName, strColor);
                         xPos += 2;
                         if (xPos >= 20)
                         {
@@ -352,12 +342,12 @@ namespace VisioEditor
             }
         }
 
-        private Shape DrawTask(string strTaskName, int xPos, int yPos)
+        private Shape DrawTask(string strTaskName, int xPos, int yPos, string strShapeName, string strColor = "RGB(192,255,206)")
         {
-            Shape sp = m_stCurrentPage.Drop(m_stBasicMaster.Masters["矩形"], xPos, yPos);
+            Shape sp = m_stCurrentPage.Drop(m_stBasicMaster.Masters[strShapeName], xPos, yPos);
             sp.Text = strTaskName;
-            sp.get_CellsU("LineColor").ResultIU = (double)VisDefaultColors.visDarkGreen;
-            sp.Cells["FillForegnd"].Formula = "RGB(192,255,206)";
+            //sp.get_CellsU("LineColor").ResultIU = (double)VisDefaultColors.visDarkGreen;
+            sp.Cells["FillForegnd"].Formula = strColor;
             return sp;
         }
 
