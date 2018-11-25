@@ -18,6 +18,7 @@ namespace VisioEditor
         Page    m_stCurrentPage;
         Document m_stBasicMaster;
         Document m_stAuditMaster;
+        Document m_stClassMaster;
 
         public GraphEditor()
         {
@@ -57,6 +58,8 @@ namespace VisioEditor
                                                                         (short)VisOpenSaveArgs.visOpenDocked);
             m_stAuditMaster = axDrawingControl1.Document.Application.Documents.OpenEx("AUDIT_M.VSSX",
                                                                          (short)VisOpenSaveArgs.visOpenDocked);
+            m_stClassMaster = axDrawingControl1.Document.Application.Documents.OpenEx("USTRME_M.VSSX",
+                                                                           (short)VisOpenSaveArgs.visAddDocked);
             m_stCurrentPage = axDrawingControl1.Document.Pages[1];
         }
 
@@ -75,11 +78,14 @@ namespace VisioEditor
                 {
                     m_stBasicMaster.Close();
                     m_stAuditMaster.Close();
+                    m_stClassMaster.Close();
                     axDrawingControl1.Src = dlg.FileName;
                     m_stBasicMaster = axDrawingControl1.Document.Application.Documents.OpenEx("Basic_M.vss",
                                                                                 (short)VisOpenSaveArgs.visOpenDocked);
                     m_stAuditMaster = axDrawingControl1.Document.Application.Documents.OpenEx("AUDIT_M.VSSX",
                                                                                  (short)VisOpenSaveArgs.visOpenDocked);
+                    m_stClassMaster = axDrawingControl1.Document.Application.Documents.OpenEx("USTRME_M.VSSX",
+                                                                                   (short)VisOpenSaveArgs.visAddDocked);
                     m_stCurrentPage = axDrawingControl1.Document.Pages[1];
                 }
             }
@@ -197,16 +203,104 @@ namespace VisioEditor
             root.AppendChild(taskList);
             root.AppendChild(connList);
             root.AppendChild(submitList);
-
+            XmlElement taskItem = null;
             for (int i = 1; i <= m_stCurrentPage.Shapes.Count; i++)
             {
                 Shape sp = m_stCurrentPage.Shapes[i];
-                if (sp.Master.Name != "动态连接线")
+                if ((sp.Master == null) && (sp.Type == (short)VisShapeTypes.visTypeGroup))
+                {
+                    taskItem = xmlDoc.CreateElement("task");
+                    string strPinX = sp.Cells["PinX"].Formula;
+                    string strPinY = sp.Cells["PinY"].Formula;
+                    foreach (Shape subShape in sp.Shapes)
+                    {
+                        if (subShape.Master.NameU == "Class")
+                        {
+                            taskItem.SetAttribute("name", subShape.Text);
+                        }
+                        else
+                        {
+                            XmlElement subTask = xmlDoc.CreateElement("properties");
+                            subTask.SetAttribute("name", subShape.Text);
+                            subTask.SetAttribute("shape", subShape.Master.NameU);
+                            taskItem.AppendChild(subTask);
+                        }
+                    }
+                    taskItem.SetAttribute("pinx", strPinX);
+                    taskItem.SetAttribute("piny", strPinY);
+                    taskList.AppendChild(taskItem);
+                }
+                else if (sp.Master.NameU == "Inheritance")
+                {
+                    string strNameU = sp.Master.NameU;
+                    List<string> vShapes = new List<string>();
+                    foreach (Connect cn in sp.Connects)
+                    {
+                        Cell fromCell = cn.FromCell;
+                        Cell toCell = cn.ToCell;
+                        if (fromCell.Shape.Master.NameU != "Inheritance")
+                        {
+                            vShapes.Add(fromCell.Shape.Text);
+                        }
+                        else if (toCell.Shape.Master.NameU != "Inheritance")
+                        {
+                            vShapes.Add(toCell.Shape.Text);
+                        }
+                    }
+
+                    if (vShapes.Count == 2)
+                    {
+                        if (sp.Text.ToLower() != "submit")
+                        {
+                            XmlElement conn = xmlDoc.CreateElement("conn");
+                            conn.SetAttribute("from", vShapes[0]);
+                            conn.SetAttribute("to", vShapes[1]);
+                            connList.AppendChild(conn);
+                        }
+                        else
+                        {
+                            XmlElement submit = xmlDoc.CreateElement("submit");
+                            submit.SetAttribute("source", vShapes[0]);
+                            submit.SetAttribute("target", vShapes[1]);
+                            submitList.AppendChild(submit);
+                        }
+                    }
+                }
+                /*
+                if (sp.Master.Name == "类")
+                {
+                    taskItem = xmlDoc.CreateElement("task");
+                    taskItem.SetAttribute("name", sp.Text);
+                    taskItem.SetAttribute("shape", sp.Master.Name);
+                    //taskItem.SetAttribute("pinx", strPinX);
+                    //taskItem.SetAttribute("piny", strPinY);
+                    //task.SetAttribute("fill_color", sp.Cells["FillForegnd"].Formula);
+                    taskList.AppendChild(taskItem);
+                    SetGroupSelectMode(sp, 0);
+                    foreach(Shape subShape in sp.Shapes)
+                    {
+                        XmlElement subTask = xmlDoc.CreateElement("properties");
+                        subTask.SetAttribute("name", subShape.Text);
+                        subTask.SetAttribute("shape", subShape.Master.Name);
+                        taskItem.AppendChild(subTask);
+                    }
+                    SetGroupSelectMode(sp, 2);
+                }
+                else if ((taskItem != null) && ((sp.Master.Name == "成员") || (sp.Master.Name == "分隔符")))
+                {
+                    XmlElement taskProp = xmlDoc.CreateElement("properties");
+                    taskProp.SetAttribute("name", sp.Text);
+                    taskProp.SetAttribute("shape", sp.Master.Name);
+                    //taskProp.SetAttribute("pinx", strPinX);
+                    //taskProp.SetAttribute("piny", strPinY);
+                    taskItem.AppendChild(taskProp);
+                }
+                else if (sp.Master.Name != "动态连接线")
                 {
                     XmlElement task = xmlDoc.CreateElement("task");
                     task.SetAttribute("name", sp.Text);
                     task.SetAttribute("shape", sp.Master.Name);
-                    task.SetAttribute("fill_color", sp.Cells["FillForegnd"].Formula);
+                    //task.SetAttribute("fill_color", sp.Cells["FillForegnd"].Formula);
                     taskList.AppendChild(task);
                 }
                 else
@@ -243,7 +337,7 @@ namespace VisioEditor
                             submitList.AppendChild(submit);
                         }
                     }
-                }
+                }*/
 
             }
             xmlDoc.Save(strXmlFileName);
@@ -368,6 +462,13 @@ namespace VisioEditor
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
+        }
+
+        private void SetGroupSelectMode(Shape targetShape, int selectMode)
+        {
+            targetShape.get_CellsSRC((short)VisSectionIndices.visSectionObject, 
+                                     (short)VisRowIndices.visRowGroup,
+                                     (short)VisCellIndices.visGroupSelectMode).FormulaU = selectMode.ToString();
         }
     }
 }
