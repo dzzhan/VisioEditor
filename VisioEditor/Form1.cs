@@ -210,8 +210,7 @@ namespace VisioEditor
                 if ((sp.Master == null) && (sp.Type == (short)VisShapeTypes.visTypeGroup))
                 {
                     taskItem = xmlDoc.CreateElement("task");
-                    string strPinX = sp.Cells["PinX"].Formula;
-                    string strPinY = sp.Cells["PinY"].Formula;
+                    SetGroupSelectMode(sp, 1);
                     foreach (Shape subShape in sp.Shapes)
                     {
                         if (subShape.Master.NameU == "Class")
@@ -222,12 +221,16 @@ namespace VisioEditor
                         {
                             XmlElement subTask = xmlDoc.CreateElement("properties");
                             subTask.SetAttribute("name", subShape.Text);
-                            subTask.SetAttribute("shape", subShape.Master.NameU);
+                            subTask.SetAttribute("shape", subShape.Master.Name);
+                            subTask.SetAttribute("pinx", subShape.Cells["PinX"].Formula);
+                            subTask.SetAttribute("piny", subShape.Cells["PinY"].Formula);
                             taskItem.AppendChild(subTask);
                         }
                     }
-                    taskItem.SetAttribute("pinx", strPinX);
-                    taskItem.SetAttribute("piny", strPinY);
+                    SetGroupSelectMode(sp, 2);
+                    taskItem.SetAttribute("pinx", sp.Cells["PinX"].Formula);
+                    taskItem.SetAttribute("piny", sp.Cells["PinY"].Formula);
+                    taskItem.SetAttribute("width", sp.Cells["Width"].Formula);
                     taskList.AppendChild(taskItem);
                 }
                 else if (sp.Master.NameU == "Inheritance")
@@ -362,6 +365,23 @@ namespace VisioEditor
             }
         }
 
+        private void RemoveUnusedShapes()
+        {
+            List<Shape> vUnusedShapes = new List<Shape>();
+            foreach (Shape sp in m_stCurrentPage.Shapes)
+            {
+                if ((sp.Master.Name == "成员") || (sp.Master.Name == "分隔符"))
+                {
+                    vUnusedShapes.Add(sp);
+                }
+            }
+
+            foreach (Shape sp in vUnusedShapes)
+            {
+                sp.Delete();
+            }
+        }
+
         private void ImportXML(string strXmlFile)
         {
             XmlDocument xmldoc = new XmlDocument();
@@ -374,8 +394,7 @@ namespace VisioEditor
             }
 
             Dictionary<string, Shape> vTaskShapes = new Dictionary<string, Shape>();
-            int xPos = 1;
-            int yPos = 11;
+            Dictionary<string, Dictionary<string, string>> vTaskProps = new Dictionary<string, Dictionary<string, string>>();
             XmlNode taskList = xmlRoot.SelectSingleNode("task_list");
             if (taskList != null)
             {
@@ -384,25 +403,29 @@ namespace VisioEditor
                     if (elem.Name.ToLower() == "task")
                     {
                         string strTaskName = elem.Attributes["name"].Value;
-                        string strShapeName = "矩形";
-                        if (elem.HasAttribute("shape"))
+                        string strPinX = elem.Attributes["pinx"].Value;
+                        string strPinY = elem.Attributes["piny"].Value;
+                        string strWidth = elem.Attributes["width"].Value;
+
+                        Dictionary<string, string> vPropties = new Dictionary<string, string>();
+                        foreach (XmlElement prop in elem.ChildNodes)
                         {
-                            strShapeName = elem.Attributes["shape"].Value;
-                        }
-                        string strColor = "RGB(192,255,206)";
-                        if (elem.HasAttribute("fill_color"))
-                        {
-                            strColor = elem.Attributes["fill_color"].Value;
+                            vPropties.Add(prop.Attributes["name"].Value, prop.Attributes["shape"].Value);
                         }
 
-                        Shape sp = DrawTask(strTaskName, xPos, yPos, strShapeName, strColor);
-                        xPos += 2;
-                        if (xPos >= 20)
-                        {
-                            xPos = 1;
-                            yPos -= 2;
-                        }
+                        Shape sp = DrawTask(strTaskName, strPinX, strPinY, strWidth);
                         vTaskShapes.Add(strTaskName, sp);
+                        vTaskProps.Add(strTaskName, vPropties);
+                    }
+                }
+
+                RemoveUnusedShapes();
+
+                foreach (string strTaskName in vTaskShapes.Keys)
+                {
+                    if (vTaskProps.ContainsKey(strTaskName))
+                    {
+                        DrawTaskProp(vTaskShapes[strTaskName], vTaskProps[strTaskName]);
                     }
                 }
             }
@@ -436,6 +459,25 @@ namespace VisioEditor
             }
         }
 
+        private Shape DrawTask(string strTaskName, string strPinX, string strPinY, string strWidth)
+        {
+            Shape sp = m_stCurrentPage.Drop(m_stClassMaster.Masters["类"], 1, 11);
+            sp.Cells["PinX"].Formula = strPinX;
+            sp.Cells["PinY"].Formula = strPinY;
+            sp.Cells["Width"].Formula = strWidth;
+            sp.Text = strTaskName;
+            return sp;
+        }
+
+        private void DrawTaskProp(Shape sp, Dictionary<string, string> vTaskProp)
+        {
+            foreach (string strPropName in vTaskProp.Keys)
+            {
+                Shape stPropShape = m_stCurrentPage.DropIntoList(m_stClassMaster.Masters[vTaskProp[strPropName]], sp, 1);
+                stPropShape.Text = strPropName;
+            }
+        }
+
         private Shape DrawTask(string strTaskName, int xPos, int yPos, string strShapeName, string strColor = "RGB(192,255,206)")
         {
             Shape sp = m_stCurrentPage.Drop(m_stBasicMaster.Masters[strShapeName], xPos, yPos);
@@ -452,7 +494,7 @@ namespace VisioEditor
                 return;
             }
 
-            Shape conn = m_stCurrentPage.Drop(m_stAuditMaster.Masters["动态连接线"], 4.50, 4.50);
+            Shape conn = m_stCurrentPage.Drop(m_stClassMaster.Masters["继承"], 4.50, 4.50);
             if (bIsSubmit)
             {
                 conn.Text = "submit";
