@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<task_graph>
+  <task_list>
+    <task name="PUCCH_TASK1" pinx="46 mm" piny="160.83902148359 mm" width="65 mm">
+      <properties name="taskId=10" shape="成员" pinx="Sheet.53!Width*0.5" piny="Sheet.53!Height*0.34119199349736" />
+      <properties name="taskType=DSP" shape="成员" pinx="Sheet.53!Width*0.5" piny="Sheet.53!Height*0.14466968362973" />
+    </task>
+    <task name="TASK2" pinx="146 mm" piny="160.77388174221 mm" width="65 mm">
+      <properties name="taskId=11" shape="成员" pinx="Sheet.55!Width*0.5" piny="Sheet.55!Height*0.34119199349736" />
+      <properties name="taskType=DSP" shape="成员" pinx="Sheet.55!Width*0.5" piny="Sheet.55!Height*0.14466968362973" />
+    </task>
+    <task name="TASK3" pinx="45 mm" piny="121.51644083843 mm" width="65 mm">
+      <properties name="taskId=12" shape="成员" pinx="Sheet.56!Width*0.5" piny="Sheet.56!Height*0.34119199349736" />
+      <properties name="taskType=FFT" shape="成员" pinx="Sheet.56!Width*0.5" piny="Sheet.56!Height*0.14466968362973" />
+    </task>
+    <task name="TASK4" pinx="146 mm" piny="120.77388174221 mm" width="65 mm">
+      <properties name="taskId=13" shape="成员" pinx="Sheet.57!Width*0.5" piny="Sheet.57!Height*0.34119199349736" />
+      <properties name="taskType=AVP" shape="成员" pinx="Sheet.57!Width*0.5" piny="Sheet.57!Height*0.14466968362973" />
+    </task>
+  </task_list>
+  <connections>
+    <conn from="PUCCH_TASK1" to="TASK2" />
+    <conn from="PUCCH_TASK1" to="TASK3" />
+    <conn from="TASK3" to="TASK4" />
+    <conn from="TASK2" to="TASK4" />
+  </connections>
+  <submits />
+</task_graph>

@@ -512,5 +512,10 @@ namespace VisioEditor
                                      (short)VisRowIndices.visRowGroup,
                                      (short)VisCellIndices.visGroupSelectMode).FormulaU = selectMode.ToString();
         }
+
+        private void newToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            m_stCurrentPage.Delete(1);
+        }
     }
 }

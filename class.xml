@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<task_graph>
+  <task_list>
+    <task name="PUCCH_TASK1" pinx="108.70230923695 mm" piny="167.99447791165 mm" width="36.499999898 mm">
+      <properties name="taskId=192" shape="成员" pinx="Sheet.70!Width*0.5" piny="Sheet.70!Height*0.28515305622267" />
+      <properties name="taskType=DSP" shape="成员" pinx="Sheet.70!Width*0.5" piny="Sheet.70!Height*0.44939764092195" />
+      <properties name="userData=12" shape="成员" pinx="Sheet.70!Width*0.5" piny="Sheet.70!Height*0.12090847152339" />
+    </task>
+    <task name="PUCCH_TASK4" pinx="108.49585838174 mm" piny="120.51618964964 mm" width="35.000000104 mm">
+      <properties name="taskType=AVP" shape="成员" pinx="Sheet.72!Width*0.5" piny="Sheet.72!Height*0.44939764092195" />
+      <properties name="taskId=195" shape="成员" pinx="Sheet.72!Width*0.5" piny="Sheet.72!Height*0.28515305622267" />
+      <properties name="userData=11" shape="成员" pinx="Sheet.72!Width*0.5" piny="Sheet.72!Height*0.12090847152339" />
+    </task>
+    <task name="PUCCH_TASK3" pinx="45.000000052 mm" piny="120.5 mm" width="35.000000104 mm">
+      <properties name="taskType=HAC" shape="成员" pinx="Sheet.74!Width*0.5" piny="Sheet.74!Height*0.44939764092195" />
+      <properties name="taskId=194" shape="成员" pinx="Sheet.74!Width*0.5" piny="Sheet.74!Height*0.28515305622267" />
+      <properties name="userData=10" shape="成员" pinx="Sheet.74!Width*0.5" piny="Sheet.74!Height*0.12090847152339" />
+    </task>
+    <task name="PUCCH_TASK0" pinx="45 mm" piny="167.99447791165 mm" width="36.499999898 mm">
+      <properties name="taskId=191" shape="成员" pinx="Sheet.82!Width*0.5" piny="Sheet.82!Height*0.38599933968173" />
+      <properties name="taskType=DSP" shape="成员" pinx="Sheet.82!Width*0.5" piny="Sheet.82!Height*0.52707329171707" />
+      <properties name="userData=9" shape="成员" pinx="Sheet.82!Width*0.5" piny="Sheet.82!Height*0.24492538764638" />
+      <properties name="testData=1" shape="成员" pinx="Sheet.82!Width*0.5" piny="Sheet.82!Height*0.10385143561103" />
+    </task>
+  </task_list>
+  <connections>
+    <conn from="PUCCH_TASK0" to="PUCCH_TASK1" />
+    <conn from="PUCCH_TASK0" to="PUCCH_TASK3" />
+    <conn from="PUCCH_TASK3" to="PUCCH_TASK4" />
+    <conn from="PUCCH_TASK4" to="PUCCH_TASK1" />
+  </connections>
+  <submits />
+</task_graph>

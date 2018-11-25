@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<task_graph>
+  <task_list />
+  <connections>
+    <conn from="PUCCH_TASK0" to="PUCCH_TASK1" />
+    <conn from="PUCCH_TASK0" to="PUCCH_TASK3" />
+    <conn from="PUCCH_TASK3" to="PUCCH_TASK4" />
+    <conn from="PUCCH_TASK4" to="PUCCH_TASK1" />
+  </connections>
+  <submits />
+</task_graph>
