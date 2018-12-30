@@ -173,6 +173,16 @@ namespace VisioEditor
             }
         }
 
+        private void onDrawingControlMouseUp(object sender, AxMicrosoft.Office.Interop.VisOcx.EVisOcx_MouseUpEvent eventData)
+        {
+            ShowMessage("MouseUp!");
+        }
+
+        private void ShowMessage(string strMsg)
+        {
+            dbgMsgText.Text += (strMsg + "\r\n");
+        }
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             System.Environment.Exit(0);
